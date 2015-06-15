@@ -1,0 +1,11 @@
+c:\users\mh\documents\visual studio 2013\Projects\JobTestTelerikMvcApp\JobTestTelerikMvcAppTests\bin\Debug\JobTestTelerikMvcAppTests.dll
+c:\users\mh\documents\visual studio 2013\Projects\JobTestTelerikMvcApp\JobTestTelerikMvcAppTests\bin\Debug\JobTestTelerikMvcAppTests.pdb
+c:\users\mh\documents\visual studio 2013\Projects\JobTestTelerikMvcApp\JobTestTelerikMvcAppTests\bin\Debug\JobTestTelerikMvcApp.dll
+c:\users\mh\documents\visual studio 2013\Projects\JobTestTelerikMvcApp\JobTestTelerikMvcAppTests\bin\Debug\System.Web.Mvc.dll
+c:\users\mh\documents\visual studio 2013\Projects\JobTestTelerikMvcApp\JobTestTelerikMvcAppTests\bin\Debug\System.Web.Optimization.dll
+c:\users\mh\documents\visual studio 2013\Projects\JobTestTelerikMvcApp\JobTestTelerikMvcAppTests\bin\Debug\JobTestTelerikMvcApp.pdb
+c:\users\mh\documents\visual studio 2013\Projects\JobTestTelerikMvcApp\JobTestTelerikMvcAppTests\bin\Debug\System.Web.Mvc.xml
+c:\users\mh\documents\visual studio 2013\Projects\JobTestTelerikMvcApp\JobTestTelerikMvcAppTests\bin\Debug\System.Web.Optimization.xml
+c:\users\mh\documents\visual studio 2013\Projects\JobTestTelerikMvcApp\JobTestTelerikMvcAppTests\obj\Debug\JobTestTelerikMvcAppTests.csprojResolveAssemblyReference.cache
+c:\users\mh\documents\visual studio 2013\Projects\JobTestTelerikMvcApp\JobTestTelerikMvcAppTests\obj\Debug\JobTestTelerikMvcAppTests.dll
+c:\users\mh\documents\visual studio 2013\Projects\JobTestTelerikMvcApp\JobTestTelerikMvcAppTests\obj\Debug\JobTestTelerikMvcAppTests.pdb

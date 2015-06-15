@@ -1,0 +1,444 @@
+﻿@{
+    ViewBag.Title = "Index";
+}
+@section head
+{
+    <link href="@Url.Content("~/Content/Create2.css")" rel="stylesheet" type="text/css" />
+    <script>
+
+        function retailerChange() {
+
+            //console.log(this.value());
+            if (this.value() == "") {
+                $("#RetailerDetail").val("");
+            } else {
+                $.get("/SaleDaily/GetRetailerDetail" + "/" + this.value(), function (data) {
+                    $("#RetailerDetail").val(data);
+                });
+                return;
+                $.get("/SaleDaily/GetUnitPriceForPartner" + "/" + this.value(), function (data) {
+                    foreignData = data;
+                    for (var i = 0; i < foreignData.length; i++) {
+                        unitPriceValues[foreignData[i].GoodsID] = foreignData[i].Price;
+                    }
+                    var y = $("#TSaleDailyGoods").data("kendoGrid");
+
+                    if (y.dataItems()[0] != undefined) {
+                        var k = y.dataItems();
+                        for (var i = 0; i < k.length; i++) {
+                            m = k[i];
+                            m.set("Amount", k[i].Quantity * unitPriceValues[k[i].GoodsID]);
+                        }
+                        y.refresh();
+
+                        var x = $('#totalAmount');
+                        var ttt = x.attr('totalAmount');
+                        if (ttt == undefined) totalAmount = 0;
+                        else totalAmount = parseFloat(ttt);
+
+                        UpdateFinalAmount();
+                    }
+                });
+            }
+
+        }
+
+        var foreignData = [{ "GoodsID": "CH375", "GoodsName": "Rượu Chuối hột Phú Lễ _ 375 ml (CH375)", "Price": 31818.0000, "WholesalePrice": 31818.0000 }, { "GoodsID": "CH375H2", "GoodsName": "Rượu Chuối hột Phú Lễ _ 375 ml _ Hộp quà 2 (CH375H2)", "Price": 40909.0000, "WholesalePrice": 40909.0000 }, { "GoodsID": "CH375H6", "GoodsName": "Rượu Chuối hột Phú Lễ _ 375 ml _ Hộp quà 6 (CH375H6)", "Price": 34848.0000, "WholesalePrice": 34848.0000 }, { "GoodsID": "CH500", "GoodsName": "Rượu Chuối hột Phú Lễ _ 500 ml (CH500)", "Price": 40909.0000, "WholesalePrice": 40909.0000 }, { "GoodsID": "CH500H", "GoodsName": "Rượu Chuối hột Phú Lễ _ 500 ml _ Cao cấp (CH500H)", "Price": 59091.0000, "WholesalePrice": 59091.0000 }, { "GoodsID": "CH650", "GoodsName": "Rượu Chuối hột Phú Lễ _ 650 ml (CH650)", "Price": 50000.0000, "WholesalePrice": 50000.0000 }, { "GoodsID": "CH650H", "GoodsName": "Rượu Chuối hột Phú Lễ _ 650 ml _ Cao cấp (CH650H)", "Price": 68182.0000, "WholesalePrice": 68182.0000 }, { "GoodsID": "H2CS", "GoodsName": "Hộp 02 chai Chuối hột và Nếp _ 50 ml (H2CS)", "Price": 36364.0000, "WholesalePrice": 36364.0000 }, { "GoodsID": "H2HH", "GoodsName": "Hộp 02 chai Chuối hột và Nếp _ 375 ml (H2HH)", "Price": 40909.0000, "WholesalePrice": 40909.0000 }, { "GoodsID": "N375", "GoodsName": "Rượu Nếp Phú Lễ _ 375 ml  (N375)", "Price": 31818.0000, "WholesalePrice": 31818.0000 }, { "GoodsID": "N375H2", "GoodsName": "Rượu Nếp Phú Lễ _ 375 ml _ Hộp quà 2 (N375H2)", "Price": 40909.0000, "WholesalePrice": 40909.0000 }, { "GoodsID": "N375H6", "GoodsName": "Rượu Nếp Phú Lễ _ 375 ml _ Hộp quà 6 (N375H6)", "Price": 34848.0000, "WholesalePrice": 34848.0000 }, { "GoodsID": "NEP500S", "GoodsName": "Rượu Nếp Phú Lễ _ 500 ml _ Cao cấp (NEP500S)", "Price": 272727.0000, "WholesalePrice": 272727.0000 }, { "GoodsID": "OGBT2000S", "GoodsName": "Rượu Nếp Ông Già Ba Tri _ 2L (OGBT2000S)", "Price": 454545.0000, "WholesalePrice": 454545.0000 }];
+        var foreignValues = {};
+        for (var i = 0; i < foreignData.length; i++) {
+            foreignValues[foreignData[i].GoodsID] = foreignData[i].GoodsName;
+        }
+
+        var unitPriceValues = {};
+        for (var i = 0; i < foreignData.length; i++) {
+            unitPriceValues[foreignData[i].GoodsID] = foreignData[i].Price;
+        }
+
+        function GetUnitPrice(data) {
+            var result = unitPriceValues[data.GoodsID];
+            return result;
+        }
+
+        var discount = 0;
+        var tax = 0;
+        var totalAmount = 0;
+        function DiscountChange(e) {
+            discount = this.value();
+            UpdateFinalAmount();
+        }
+        function TaxChange(e) {
+            tax = this.value();
+            UpdateFinalAmount();
+        }
+        function UpdateFinalAmount() {
+
+            var totalDiscount = totalAmount * discount / 100;
+            $('#totalDiscount').text(totalDiscount.format(0));
+
+            var totalTax = (totalAmount/*-totalDiscount*/) * tax / 100;
+            $('#totalTax').text(totalTax.format(0));
+
+            finalAmount = totalAmount - totalDiscount + totalTax;
+            $('#finalAmount').text(finalAmount.format(0));
+        }
+
+        // UpdateFinalAmount();
+
+        function onChange(e) {
+            if (e.action == "itemchange") {
+                if (e.field == "GoodsID") {
+                    var model = e.items[0];
+                    x = model;
+                    model.set("OfferPrice", unitPriceValues[model.GoodsID]);
+                    model.set("OfferAmount", unitPriceValues[model.GoodsID] * model.Quantity);
+                }
+
+                if (e.field == "Quantity" || e.field == "OfferAmount") {
+                    var model = e.items[0];
+                    model.set("OfferAmount", unitPriceValues[model.GoodsID] * model.Quantity);
+                }
+            }
+
+            var x = $('#totalAmount');
+            var ttt = x.attr('totalAmount');
+            if (ttt == undefined) totalAmount = 0;
+            else totalAmount = parseFloat(ttt);
+
+            UpdateFinalAmount();
+            var y = $("#TSaleDailyGoods").data("kendoGrid");
+            y.refresh();
+        }
+        function onChange2(e) {
+
+            // this.refresh();
+            rowNumber = 0;
+            x = e;
+            if (e.action == "itemchange") {
+                if (e.field == "GoodsID" || e.field == "UnitPrice") {
+                    var model = e.items[0];
+                    x = model;
+                    model.set("UnitPrice", unitPriceValues2[model.GoodsID]);
+                    model.set("Amount", unitPriceValues2[model.GoodsID] * model.Quantity);
+                }
+
+                if (e.field == "Quantity" || e.field == "Amount") {
+                    var model = e.items[0];
+                    model.set("Amount", unitPriceValues2[model.GoodsID] * model.Quantity);
+                }
+            }
+
+            var y = $("#TSaleDailyInstocks").data("kendoGrid");
+            y.refresh(); rowNumber = 0;
+        }
+
+        function onChange3(e) {
+
+            // this.refresh();
+            rowNumber = 0;
+            x = e;
+            if (e.action == "itemchange") {
+                if (e.field == "GoodsID") {
+                    var model = e.items[0];
+                    x = model;
+                    model.set("UnitPrice", unitPriceValues2[model.GoodsID]);
+                }
+            }
+
+            var y = $("#T_SaleDailyRevokesViewModel").data("kendoGrid");
+            y.refresh(); rowNumber = 0;
+        }
+
+
+
+
+        var unitPriceValues2 = {};
+        for (var i = 0; i < foreignData.length; i++) {
+            unitPriceValues2[foreignData[i].GoodsID] = foreignData[i].WholesalePrice;
+        }
+
+        var foreignUnitData = [{ "Selected": false, "Text": "Chai", "Value": "CH" }, { "Selected": false, "Text": "Hộp", "Value": "HO" }, { "Selected": false, "Text": "Thùng", "Value": "TH" }];
+        var foreignUnitValues = {};
+        for (var i = 0; i < foreignUnitData.length; i++) {
+            foreignUnitValues[foreignUnitData[i].Value] = foreignUnitData[i].Text;
+        }
+        function filterRetailer() {
+            return
+            { 
+                //filter: $("#RetailerID").data("kendoDropDownList").;
+            };
+        }
+
+        function index(dataItem) {
+            var data = $("#TSaleDailyGoods").data("kendoGrid").dataSource.data();
+
+            return data.indexOf(dataItem);
+        }
+        function index2(dataItem) {
+            var data = $("#TSaleDailyInstocks").data("kendoGrid").dataSource.data();
+
+            return data.indexOf(dataItem);
+        }
+        function index3(dataItem) {
+            var data = $("#T_SaleDailyRevokesViewModel").data("kendoGrid").dataSource.data();
+
+            return data.indexOf(dataItem);
+        }
+
+        var rowNumber = 0;
+        var rowNumber2 = 0;
+        var rowNumber3 = 0;
+
+        function resetRowNumber(e) {
+            rowNumber = 0;
+        }
+        function resetRowNumber2(e) {
+            rowNumber2 = 0;
+        }
+        function resetRowNumber3(e) {
+            rowNumber3 = 0;
+        }
+
+        function renderNumber(data) {
+            return ++rowNumber;
+        }
+        function renderNumber2(data) {
+            return ++rowNumber2;
+        }
+        function renderNumber3(data) {
+            return ++rowNumber3;
+        }
+
+        $(function () {
+           $("form").kendoValidator();
+        });
+    </script>
+
+    <style>
+        .dropdown-header {
+            font-size: 1.2em;
+            padding: 0;
+        }
+
+            .dropdown-header > span {
+                -webkit-box-sizing: border-box;
+                -moz-box-sizing: border-box;
+                box-sizing: border-box;
+                text-align: left;
+                display: inline-block;
+                border-style: solid;
+                border-width: 0 0 1px 1px;
+                padding: .3em .6em;
+                width: 312px;
+            }
+
+                .dropdown-header > span:first-child {
+                    width: 82px;
+                    border-left-width: 0;
+                }
+
+        .demo-section {
+            width: 400px;
+            margin: 35px auto 50px;
+            padding: 30px;
+        }
+
+            .demo-section h2 {
+                text-transform: uppercase;
+                font-size: 1.2em;
+                margin-bottom: 10px;
+            }
+
+        .selected-value {
+            float: left;
+            width: 16px;
+            margin: 0 4px;
+        }
+
+        #RetailerID-list .k-item > span {
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+            display: inline-block;
+            border-style: solid;
+            border-width: 0 0 1px 1px;
+            vertical-align: top;
+            min-height: 65px;
+            width: 79%;
+            padding: .6em 0 0 .6em;
+        }
+
+            #RetailerID-list .k-item > span:first-child {
+                width: 77px;
+                border-left-width: 0;
+                padding: .6em 0 0 0;
+            }
+
+        #RetailerID-list img {
+            -moz-box-shadow: 0 0 2px rgba(0, 0, 0, .4);
+            -webkit-box-shadow: 0 0 2px rgba(0, 0, 0, .4);
+            box-shadow: 0 0 2px rgba(0, 0, 0, .4);
+            width: 70px;
+            height: 70px;
+        }
+
+        #RetailerID-list h3 {
+            font-size: 1.6em;
+            margin: 0;
+            padding: 0;
+        }
+
+        #RetailerID-list p {
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: initial !important;
+        }
+
+        #TSaleDailyGoods {
+            padding: 3px;
+            border-color: black;
+        }
+
+        #TSaleDailyInstocks {
+            padding: 3px;
+            border-color: yellowgreen;
+        }
+
+        #T_SaleDailyRevokesViewModel {
+            padding: 3px;
+            border-color: blue;
+        }
+    </style>
+}
+<h2>Sale</h2>
+<div class="container-fluid body-content">
+    <div class="row">
+        <div class="col-md-12">
+            <form action="/Sale/Create" class="form-horizontal" method="post" data-role="validator" novalidate="novalidate">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title"><b>Thêm mới báo cáo bán hàng</b></h3>
+                        <span> Người lập: Trần Minh Hòa</span>
+                    </div>
+                    <div class="panel-body">
+
+                        <fieldset>
+                            <div class="validation-summary-valid text-danger" data-valmsg-summary="true">
+                                <ul>
+                                    <li style="display:none"></li>
+                                </ul>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label class="control-label col-sm-4" for="email">Số phiếu:</label>
+                                        <div class="col-sm-8">
+                                            <input class="k-textbox" id="VoucherID" name="VoucherID" readonly="readonly" value="SR15000018">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label class="control-label col-sm-4" for="email">Ngày:</label>
+                                        <div class="col-sm-8">
+                                            @Html.Kendo().DatePicker().Name("IODate").Start(CalendarView.Year).Depth(CalendarView.Year).Format("yyyy-MM-dd").Value(DateTime.Now.ToString("yyyy-MM-dd"))
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="control-label col-sm-3" for="pwd">Điểm bán lẻ:</label>
+                                        <div class="col-sm-9">
+                                            @Html.Kendo().DropDownList().DataTextField("Name").DataValueField("ID").Filter(FilterType.Contains).OptionLabel("Chọn nhà bán lẽ...").AutoBind(false).HtmlAttributes(new { style = "width: 400px" }).Name("RetailerID").DataSource(source => { source.Read(read => { read.Action("getRetailList", "Sale"); }).ServerFiltering(true); }).SelectedIndex(0).HeaderTemplate("<div class=\"dropdown-header\"><span class=\"k-widget k-header\">ID</span><span class=\"k-widget k-header\">Tên</span></div>").Template("#if(data.ID) {#<span class=\"k-state-default\">#:data.ID#</span><span class=\"k-state-default\"><h3>#: data.Name #</h3><p>#: data.FullAddress #</p></span>#} else{#Chọn điểm bán lẻ#}#").ValueTemplate("#if(data.ID) {#<span>#:data.ID# | #:data.Name# #if(data.FullAddress){# | #:data.FullAddress# #}#</span>#} else{#<span>Chọn điểm bán lẻ</span>#}#")
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 col-md-offset-6">
+                                    <div class="form-group">
+                                        <label class="control-label col-sm-3" for="pwd">Nhà phân phối:</label>
+                                        <div class="col-sm-9">
+                                            <input class="k-textbox" id="RetailerDetail" name="RetailerDetail" readonly="readonly">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="control-label col-sm-2" for="email">Ghi chú:</label>
+                                        <div class="col-sm-10">
+                                            <input class="k-textbox" id="Description" name="Description">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="control-label col-sm-3" for="email">Tiền tệ:</label>
+                                        <div class="col-sm-9">
+                                            <span class="k-widget k-dropdown k-header" unselectable="on" role="listbox" aria-haspopup="true" aria-expanded="false" tabindex="0" aria-owns="CurrencyID_listbox" aria-disabled="false" aria-readonly="false" aria-busy="false" aria-activedescendant="CurrencyID_option_selected" style=""><span unselectable="on" class="k-dropdown-wrap k-state-default"><span unselectable="on" class="k-input">VND (1)</span><span unselectable="on" class="k-select"><span unselectable="on" class="k-icon k-i-arrow-s">select</span></span></span><input id="CurrencyID" name="CurrencyID" type="text" data-role="dropdownlist" style="display: none;"></span>
+                                            <script>
+                                                jQuery(function () { jQuery("#CurrencyID").kendoDropDownList({ "dataSource": [{ "Text": "VND (1)", "Value": "VND" }, { "Text": "JPY (270)", "Value": "JPY" }, { "Text": "USD (22,000)", "Value": "USD" }], "dataTextField": "Text", "dataValueField": "Value" }); });
+                                            </script>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div class="k-widget k-grid" id="TSaleDailyGoods" style="margin-bottom: 15px;" data-role="grid"><div class="k-toolbar k-grid-toolbar k-grid-top"><a class="k-button k-button-icontext k-grid-add" href="/SaleDaily/Create2?TSaleDailyGoods-mode=insert"><span class="k-icon k-add"></span>Thêm hàng bán</a></div><table role="grid"><colgroup><col style="width:30px"><col style="width:350px"><col style="width:80px"><col style="width:70px"><col style="width:140px"><col style="width:180px"><col style="width:50px"></colgroup><thead class="k-grid-header" role="rowgroup"><tr role="row"><th class="k-header" scope="col"><span class="k-link">#</span></th><th class="k-header" data-field="AutoID" data-title="Auto ID" scope="col" style="display:none"><span class="k-link">Auto ID</span></th><th class="k-header" data-aggregates="count" data-field="GoodsID" data-title="Tên hàng hóa" scope="col"><span class="k-link">Tên hàng hóa</span></th><th class="k-header" data-field="UnitID" data-title="ĐVT" scope="col"><span class="k-link">ĐVT</span></th><th class="k-header" data-aggregates="sum" data-field="Quantity" data-title="SL" scope="col"><span class="k-link">SL</span></th><th class="k-header" data-field="OfferPrice" data-title="Đơn giá" scope="col"><span class="k-link">Đơn giá</span></th><th class="k-header" data-aggregates="sum" data-field="OfferAmount" data-title="Thành tiền" scope="col"><span class="k-link">Thành tiền</span></th><th class="k-header" scope="col"><span class="k-link">&nbsp;</span></th></tr></thead><tfoot class="k-grid-footer"><tr class="k-footer-template"><td>&nbsp;</td><td style="display:none">&nbsp;</td><td>Total: 1</td><td>&nbsp;</td><td>0</td><td>&nbsp;</td><td><span style="float:right;" id="totalAmount" totalamount="0">0 VNĐ</span></td><td>&nbsp;</td></tr></tfoot><tbody role="rowgroup"><tr data-uid="e29c82b7-e25e-4743-b9ce-5a2d4bec3fe2" role="row" class=""><td role="gridcell">1</td><td style="display:none" role="gridcell" class="" data-role="editable">0<input type="hidden" name="TSaleDailyGoods[0].AutoID" value="0"></td><td role="gridcell">Rượu Chuối hột Phú Lễ _ 375 ml (CH375)<input type="hidden" name="TSaleDailyGoods[0].GoodsID" value="CH375"></td><td role="gridcell">Chai<input type="hidden" name="TSaleDailyGoods[0].UnitID" value="CH"></td><td role="gridcell">0<input type="hidden" name="TSaleDailyGoods[0].Quantity" value="0"></td><td style="text-align:right;" role="gridcell">31,818 VNĐ</td><td style="text-align:right;" role="gridcell">0 VNĐ</td><td role="gridcell"><a class="k-button k-button-icontext k-grid-delete" href="#"><span class="k-icon k-delete"></span><span>Xoá</span></a></td></tr></tbody></table></div>
+                                    <script>
+                                        jQuery(function () { jQuery("#TSaleDailyGoods").kendoGrid({ "dataBound": resetRowNumber, "columns": [{ "title": "#", "width": "30px", "template": "#= renderNumber(data) #" }, { "title": "Auto ID", "hidden": true, "width": "30px", "template": "#= AutoID #\u003cinput type=\u0027hidden\u0027 name=\u0027TSaleDailyGoods[#= index(data)#].AutoID\u0027 value=\u0027#= AutoID #\u0027 /\u003e", "field": "AutoID", "filterable": {}, "encoded": true, "editor": "\u003cinput class=\"text-box single-line\" data-val=\"true\" data-val-number=\"The field AutoID must be a number.\" data-val-required=\"The AutoID field is required.\" id=\"AutoID\" name=\"AutoID\" type=\"number\" value=\"0\" /\u003e\u003cspan class=\"field-validation-valid\" data-valmsg-for=\"AutoID\" data-valmsg-replace=\"true\"\u003e\u003c/span\u003e" }, { "title": "Tên hàng hóa", "width": "350px", "template": "#= foreignValues[GoodsID] #\u003cinput type=\u0027hidden\u0027 name=\u0027TSaleDailyGoods[#= index(data)#].GoodsID\u0027 value=\u0027#= GoodsID #\u0027 /\u003e", "footerTemplate": "Total: #=count#", "field": "GoodsID", "filterable": {}, "encoded": true, "aggregates": ["count"], "editor": "\u003cinput id=\"GoodsID\" name=\"GoodsID\" type=\"text\" value=\"CH375\" /\u003e\u003cscript\u003e\r\n\tjQuery(function(){jQuery(\"#GoodsID\").kendoDropDownList({\"dataSource\":[{\"Text\":\"Rượu Chuối hột Phú Lễ _ 375 ml (CH375)\",\"Value\":\"CH375\"},{\"Text\":\"Rượu Chuối hột Phú Lễ _ 375 ml _ Hộp quà 2 (CH375H2)\",\"Value\":\"CH375H2\"},{\"Text\":\"Rượu Chuối hột Phú Lễ _ 375 ml _ Hộp quà 6 (CH375H6)\",\"Value\":\"CH375H6\"},{\"Text\":\"Rượu Chuối hột Phú Lễ _ 500 ml (CH500)\",\"Value\":\"CH500\"},{\"Text\":\"Rượu Chuối hột Phú Lễ _ 500 ml _ Cao cấp (CH500H)\",\"Value\":\"CH500H\"},{\"Text\":\"Rượu Chuối hột Phú Lễ _ 650 ml (CH650)\",\"Value\":\"CH650\"},{\"Text\":\"Rượu Chuối hột Phú Lễ _ 650 ml _ Cao cấp (CH650H)\",\"Value\":\"CH650H\"},{\"Text\":\"Hộp 02 chai Chuối hột và Nếp _ 50 ml (H2CS)\",\"Value\":\"H2CS\"},{\"Text\":\"Hộp 02 chai Chuối hột và Nếp _ 375 ml (H2HH)\",\"Value\":\"H2HH\"},{\"Text\":\"Rượu Nếp Phú Lễ _ 375 ml  (N375)\",\"Value\":\"N375\"},{\"Text\":\"Rượu Nếp Phú Lễ _ 375 ml _ Hộp quà 2 (N375H2)\",\"Value\":\"N375H2\"},{\"Text\":\"Rượu Nếp Phú Lễ _ 375 ml _ Hộp quà 6 (N375H6)\",\"Value\":\"N375H6\"},{\"Text\":\"Rượu Nếp Phú Lễ _ 500 ml _ Cao cấp (NEP500S)\",\"Value\":\"NEP500S\"},{\"Text\":\"Rượu Nếp Ông Già Ba Tri _ 2L (OGBT2000S)\",\"Value\":\"OGBT2000S\"}],\"dataTextField\":\"Text\",\"dataValueField\":\"Value\"});});\r\n\u003c/script\u003e\r\n\u003cspan class=\"field-validation-valid\" data-valmsg-for=\"GoodsID\" data-valmsg-replace=\"true\"\u003e\u003c/span\u003e", "values": [{ "text": "Rượu Chuối hột Phú Lễ _ 375 ml (CH375)", "value": "CH375" }, { "text": "Rượu Chuối hột Phú Lễ _ 375 ml _ Hộp quà 2 (CH375H2)", "value": "CH375H2" }, { "text": "Rượu Chuối hột Phú Lễ _ 375 ml _ Hộp quà 6 (CH375H6)", "value": "CH375H6" }, { "text": "Rượu Chuối hột Phú Lễ _ 500 ml (CH500)", "value": "CH500" }, { "text": "Rượu Chuối hột Phú Lễ _ 500 ml _ Cao cấp (CH500H)", "value": "CH500H" }, { "text": "Rượu Chuối hột Phú Lễ _ 650 ml (CH650)", "value": "CH650" }, { "text": "Rượu Chuối hột Phú Lễ _ 650 ml _ Cao cấp (CH650H)", "value": "CH650H" }, { "text": "Hộp 02 chai Chuối hột và Nếp _ 50 ml (H2CS)", "value": "H2CS" }, { "text": "Hộp 02 chai Chuối hột và Nếp _ 375 ml (H2HH)", "value": "H2HH" }, { "text": "Rượu Nếp Phú Lễ _ 375 ml  (N375)", "value": "N375" }, { "text": "Rượu Nếp Phú Lễ _ 375 ml _ Hộp quà 2 (N375H2)", "value": "N375H2" }, { "text": "Rượu Nếp Phú Lễ _ 375 ml _ Hộp quà 6 (N375H6)", "value": "N375H6" }, { "text": "Rượu Nếp Phú Lễ _ 500 ml _ Cao cấp (NEP500S)", "value": "NEP500S" }, { "text": "Rượu Nếp Ông Già Ba Tri _ 2L (OGBT2000S)", "value": "OGBT2000S" }] }, { "title": "ĐVT", "width": "80px", "template": "#= foreignUnitValues[UnitID] #\u003cinput type=\u0027hidden\u0027 name=\u0027TSaleDailyGoods[#= index(data)#].UnitID\u0027 value=\u0027#= UnitID #\u0027 /\u003e", "field": "UnitID", "filterable": {}, "encoded": true, "editor": "\u003cinput id=\"UnitID\" name=\"UnitID\" type=\"text\" value=\"CH\" /\u003e\u003cscript\u003e\r\n\tjQuery(function(){jQuery(\"#UnitID\").kendoDropDownList({\"dataSource\":[{\"Text\":\"Chai\",\"Value\":\"CH\"},{\"Text\":\"Hộp\",\"Value\":\"HO\"},{\"Text\":\"Thùng\",\"Value\":\"TH\"}],\"dataTextField\":\"Text\",\"dataValueField\":\"Value\"});});\r\n\u003c/script\u003e\r\n\u003cspan class=\"field-validation-valid\" data-valmsg-for=\"UnitID\" data-valmsg-replace=\"true\"\u003e\u003c/span\u003e", "values": [{ "text": "Chai", "value": "CH" }, { "text": "Hộp", "value": "HO" }, { "text": "Thùng", "value": "TH" }] }, { "title": "SL", "width": "70px", "template": "#= Quantity #\u003cinput type=\u0027hidden\u0027 name=\u0027TSaleDailyGoods[#= index(data)#].Quantity\u0027 value=\u0027#= Quantity #\u0027 /\u003e", "footerTemplate": "#=sum#", "field": "Quantity", "filterable": {}, "encoded": true, "aggregates": ["sum"], "editor": "\u003cinput data-val=\"true\" data-val-number=\"The field Quantity must be a number.\" id=\"Quantity\" name=\"Quantity\" style=\"width:100%\" type=\"number\" value=\"0\" /\u003e\u003cscript\u003e\r\n\tjQuery(function(){jQuery(\"#Quantity\").kendoNumericTextBox({});});\r\n\u003c/script\u003e\u003cspan class=\"field-validation-valid\" data-valmsg-for=\"Quantity\" data-valmsg-replace=\"true\"\u003e\u003c/span\u003e" }, { "title": "Đơn giá", "attributes": { "style": "text-align:right;" }, "width": "140px", "template": "#=   kendo.format(\u0027{0:\\#\\#\\#,\\#\\#\\#}\u0027, GetUnitPrice(data))  # VNĐ", "field": "OfferPrice", "filterable": {}, "encoded": true }, { "title": "Thành tiền", "attributes": { "style": "text-align:right;" }, "width": "180px", "footerTemplate": "\u003cspan style = \u0027float:right;\u0027 id=\u0027totalAmount\u0027 totalAmount=\u0027#=sum#\u0027\u003e#= kendo.format(\u0027{0:\\#\\#\\#,\\#\\#\\#}\u0027, sum)# VNĐ\u003c/span\u003e", "field": "OfferAmount", "format": "{0:###,### VNĐ}", "filterable": {}, "encoded": true, "aggregates": ["sum"], "editor": "\u003cinput class=\"text-box single-line\" data-val=\"true\" data-val-number=\"The field OfferAmount must be a number.\" id=\"OfferAmount\" name=\"OfferAmount\" type=\"text\" value=\"0.00\" /\u003e\u003cspan class=\"field-validation-valid\" data-valmsg-for=\"OfferAmount\" data-valmsg-replace=\"true\"\u003e\u003c/span\u003e" }, { "width": "50px", "command": [{ "name": "destroy", "buttonType": "ImageAndText", "text": "\u003cspan\u003eXoá\u003c/span\u003e" }] }], "scrollable": false, "editable": { "confirmation": "Bạn muốn xóa dòng này ?", "confirmDelete": "Delete", "cancelDelete": "Cancel", "mode": "incell", "template": null, "createAt": "bottom", "create": true, "update": true, "destroy": true }, "toolbar": { "command": [{ "name": null, "buttonType": "ImageAndText", "text": "Thêm hàng bán" }] }, "dataSource": { "type": (function () { if (kendo.data.transports['aspnetmvc-ajax']) { return 'aspnetmvc-ajax'; } else { throw new Error('The kendo.aspnetmvc.min.js script is not included.'); } })(), "transport": { "read": { "url": "" }, "prefix": "" }, "aggregate": [{ "field": "Quantity", "aggregate": "sum" }, { "field": "GoodsID", "aggregate": "count" }, { "field": "OfferAmount", "aggregate": "sum" }], "change": onChange, "schema": { "data": "Data", "total": "Total", "errors": "Errors", "model": { "id": "ID", "fields": { "AutoID": { "type": "number" }, "ID": { "editable": false, "type": "number", "defaultValue": -1 }, "OrderNo": { "type": "number", "defaultValue": null }, "GoodsID": { "type": "string", "defaultValue": "CH375" }, "GoodsName": { "type": "string" }, "UnitID": { "type": "string", "defaultValue": "CH" }, "UnitName": { "type": "string" }, "UnitConvert": { "type": "string" }, "Quantity": { "type": "number", "defaultValue": 0 }, "UnitPrice": { "type": "number", "defaultValue": null }, "Amount": { "type": "number", "defaultValue": null }, "AmountExchange": { "type": "number", "defaultValue": null }, "OfferPrice": { "editable": false, "type": "number", "defaultValue": 31818.0000 }, "OfferAmount": { "type": "number", "defaultValue": 0 }, "OfferAmountExchange": { "type": "number", "defaultValue": null }, "IODate": { "type": "date", "defaultValue": null }, "CurrencyName": { "type": "string" }, "VoucherID": { "type": "string" }, "VoucherAutoID": { "type": "number" } } } }, "data": { "Data": [], "Total": 0 } } }); });
+                                    </script>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">% Chiết khấu:</label>
+                                        <div class="col-md-4">
+                                            <span class="k-widget k-numerictextbox"><span class="k-numeric-wrap k-state-default"><input type="text" class="k-formatted-value k-input" tabindex="0" aria-disabled="false" aria-readonly="false" style="display: inline-block;"><input data-val="true" data-val-number="The field Discount must be a number." id="Discount" name="Discount" type="text" value="0" data-role="numerictextbox" role="spinbutton" class="k-input" aria-valuenow="0" aria-disabled="false" aria-readonly="false" style="display: none;"><span class="k-select"><span unselectable="on" class="k-link"><span unselectable="on" class="k-icon k-i-arrow-n" title="Increase value">Increase value</span></span><span unselectable="on" class="k-link"><span unselectable="on" class="k-icon k-i-arrow-s" title="Decrease value">Decrease value</span></span></span></span></span>
+                                            <script>
+                                                jQuery(function () { jQuery("#Discount").kendoNumericTextBox({ "change": DiscountChange }); });
+                                            </script>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <span class="input-group-addon"><span id="totalDiscount">0</span> VNĐ</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="control-label col-sm-3">Thuế:</label>
+                                        <div class="col-sm-4">
+                                            <span class="k-widget k-numerictextbox"><span class="k-numeric-wrap k-state-default"><input type="text" class="k-formatted-value k-input" tabindex="0" aria-disabled="false" aria-readonly="false" style="display: inline-block;"><input data-val="true" data-val-number="The field TaxValue must be a number." id="TaxValue" name="TaxValue" type="text" value="0" data-role="numerictextbox" role="spinbutton" class="k-input" aria-valuenow="0" aria-disabled="false" aria-readonly="false" style="display: none;"><span class="k-select"><span unselectable="on" class="k-link"><span unselectable="on" class="k-icon k-i-arrow-n" title="Increase value">Increase value</span></span><span unselectable="on" class="k-link"><span unselectable="on" class="k-icon k-i-arrow-s" title="Decrease value">Decrease value</span></span></span></span></span>
+                                            <script>
+                                                jQuery(function () { jQuery("#TaxValue").kendoNumericTextBox({ "change": TaxChange }); });
+                                            </script>
+                                        </div>
+                                        <div class="col-md-5">
+                                            <span class="input-group-addon"><span id="totalTax">0</span> VNĐ</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Tổng tiền:</label>
+                                        <div class="col-md-8">
+                                            <span class="input-group-addon"><span id="finalAmount">0</span> VNĐ</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
