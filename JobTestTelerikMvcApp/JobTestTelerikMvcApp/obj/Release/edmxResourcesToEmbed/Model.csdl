@@ -1,0 +1,105 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Schema Namespace="minhhoa_demoModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+  <EntityType Name="Distributor">
+    <Key>
+      <PropertyRef Name="ID" />
+    </Key>
+    <Property Name="ID" Type="String" MaxLength="255" FixedLength="false" Unicode="false" Nullable="false" />
+    <Property Name="Name" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+    <NavigationProperty Name="Retails" Relationship="Self.FK_Retail_Distributor" FromRole="Distributor" ToRole="Retail" />
+  </EntityType>
+  <EntityType Name="Product">
+    <Key>
+      <PropertyRef Name="ID" />
+    </Key>
+    <Property Name="Name" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+    <Property Name="ID" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="IDNumber" Type="String" MaxLength="255" FixedLength="false" Unicode="false" Nullable="false" />
+    <Property Name="Price" Type="Double" Nullable="false" />
+    <NavigationProperty Name="ProductTypes" Relationship="Self.FK_ProductType_Product" FromRole="Product" ToRole="ProductType" />
+  </EntityType>
+  <EntityType Name="ProductType">
+    <Key>
+      <PropertyRef Name="ProductID" />
+      <PropertyRef Name="TypeID" />
+    </Key>
+    <Property Name="ProductID" Type="Int64" Nullable="false" />
+    <Property Name="TypeID" Type="Int64" Nullable="false" />
+    <Property Name="Price" Type="Double" />
+    <NavigationProperty Name="Product" Relationship="Self.FK_ProductType_Product" FromRole="ProductType" ToRole="Product" />
+    <NavigationProperty Name="Type" Relationship="Self.FK_ProductType_Type" FromRole="ProductType" ToRole="Type" />
+  </EntityType>
+  <EntityType Name="Retail">
+    <Key>
+      <PropertyRef Name="ID" />
+    </Key>
+    <Property Name="ID" Type="String" MaxLength="255" FixedLength="false" Unicode="false" Nullable="false" />
+    <Property Name="Name" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+    <Property Name="Address" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+    <Property Name="DisID" Type="String" MaxLength="255" FixedLength="false" Unicode="false" />
+    <NavigationProperty Name="Distributor" Relationship="Self.FK_Retail_Distributor" FromRole="Retail" ToRole="Distributor" />
+  </EntityType>
+  <EntityType Name="Type">
+    <Key>
+      <PropertyRef Name="ID" />
+    </Key>
+    <Property Name="Name" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+    <Property Name="ID" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <NavigationProperty Name="ProductTypes" Relationship="Self.FK_ProductType_Type" FromRole="Type" ToRole="ProductType" />
+  </EntityType>
+  <Association Name="FK_Retail_Distributor">
+    <End Role="Distributor" Type="Self.Distributor" Multiplicity="0..1" />
+    <End Role="Retail" Type="Self.Retail" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Distributor">
+        <PropertyRef Name="ID" />
+      </Principal>
+      <Dependent Role="Retail">
+        <PropertyRef Name="DisID" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_ProductType_Product">
+    <End Role="Product" Type="Self.Product" Multiplicity="1" />
+    <End Role="ProductType" Type="Self.ProductType" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Product">
+        <PropertyRef Name="ID" />
+      </Principal>
+      <Dependent Role="ProductType">
+        <PropertyRef Name="ProductID" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_ProductType_Type">
+    <End Role="Type" Type="Self.Type" Multiplicity="1" />
+    <End Role="ProductType" Type="Self.ProductType" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Type">
+        <PropertyRef Name="ID" />
+      </Principal>
+      <Dependent Role="ProductType">
+        <PropertyRef Name="TypeID" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <EntityContainer Name="jobtestentities" annotation:LazyLoadingEnabled="true">
+    <EntitySet Name="Distributors" EntityType="Self.Distributor" />
+    <EntitySet Name="Products" EntityType="Self.Product" />
+    <EntitySet Name="ProductTypes" EntityType="Self.ProductType" />
+    <EntitySet Name="Retails" EntityType="Self.Retail" />
+    <EntitySet Name="Types" EntityType="Self.Type" />
+    <AssociationSet Name="FK_Retail_Distributor" Association="Self.FK_Retail_Distributor">
+      <End Role="Distributor" EntitySet="Distributors" />
+      <End Role="Retail" EntitySet="Retails" />
+    </AssociationSet>
+    <AssociationSet Name="FK_ProductType_Product" Association="Self.FK_ProductType_Product">
+      <End Role="Product" EntitySet="Products" />
+      <End Role="ProductType" EntitySet="ProductTypes" />
+    </AssociationSet>
+    <AssociationSet Name="FK_ProductType_Type" Association="Self.FK_ProductType_Type">
+      <End Role="Type" EntitySet="Types" />
+      <End Role="ProductType" EntitySet="ProductTypes" />
+    </AssociationSet>
+  </EntityContainer>
+</Schema>

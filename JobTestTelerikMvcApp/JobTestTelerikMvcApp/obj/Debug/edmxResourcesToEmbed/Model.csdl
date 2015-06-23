@@ -1,0 +1,181 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Schema Namespace="minhhoa_demoModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+  <EntityType Name="Distributor">
+    <Key>
+      <PropertyRef Name="ID" />
+    </Key>
+    <Property Name="ID" Type="Int64" Nullable="false" />
+    <Property Name="Name" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+    <NavigationProperty Name="Retails" Relationship="Self.FK_Retail_Distributor" FromRole="Distributor" ToRole="Retail" />
+  </EntityType>
+  <EntityType Name="Product">
+    <Key>
+      <PropertyRef Name="ID" />
+    </Key>
+    <Property Name="Name" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+    <Property Name="ID" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="IDNumber" Type="String" MaxLength="255" FixedLength="false" Unicode="false" Nullable="false" />
+    <Property Name="Price" Type="Double" Nullable="false" />
+    <NavigationProperty Name="ProductTypes" Relationship="Self.FK_ProductType_Product" FromRole="Product" ToRole="ProductType" />
+    <NavigationProperty Name="Bill_Product" Relationship="minhhoa_demoModel.FK_Bill_Product_Product" FromRole="Product" ToRole="Bill_Product" />
+  </EntityType>
+  <EntityType Name="ProductType">
+    <Key>
+      <PropertyRef Name="ProductID" />
+      <PropertyRef Name="TypeID" />
+    </Key>
+    <Property Name="ProductID" Type="Int64" Nullable="false" />
+    <Property Name="TypeID" Type="Int64" Nullable="false" />
+    <Property Name="Price" Type="Double" />
+    <NavigationProperty Name="Product" Relationship="Self.FK_ProductType_Product" FromRole="ProductType" ToRole="Product" />
+    <NavigationProperty Name="Type" Relationship="Self.FK_ProductType_Type" FromRole="ProductType" ToRole="Type" />
+  </EntityType>
+  <EntityType Name="Retail">
+    <Key>
+      <PropertyRef Name="ID" />
+    </Key>
+    <Property Name="ID" Type="Int64" Nullable="false" />
+    <Property Name="Name" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+    <Property Name="Address" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+    <Property Name="DisID" Type="Int64" Nullable="false" />
+    <NavigationProperty Name="Distributor" Relationship="Self.FK_Retail_Distributor" FromRole="Retail" ToRole="Distributor" />
+  </EntityType>
+  <EntityType Name="sysdiagram">
+    <Key>
+      <PropertyRef Name="diagram_id" />
+    </Key>
+    <Property Name="name" Type="String" MaxLength="128" FixedLength="false" Unicode="true" Nullable="false" />
+    <Property Name="principal_id" Type="Int32" Nullable="false" />
+    <Property Name="diagram_id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="version" Type="Int32" />
+    <Property Name="definition" Type="Binary" MaxLength="Max" FixedLength="false" />
+  </EntityType>
+  <EntityType Name="Type">
+    <Key>
+      <PropertyRef Name="ID" />
+    </Key>
+    <Property Name="Name" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+    <Property Name="ID" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <NavigationProperty Name="ProductTypes" Relationship="Self.FK_ProductType_Type" FromRole="Type" ToRole="ProductType" />
+  </EntityType>
+  <EntityType Name="Bill">
+    <Key>
+      <PropertyRef Name="ID" />
+    </Key>
+    <Property Name="ID" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="BillNumber" Type="String" MaxLength="255" FixedLength="false" Unicode="false" />
+    <Property Name="Name" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+    <Property Name="DateTime" Type="DateTime" Precision="3" />
+    <Property Name="RetailID" Type="Int64" />
+    <Property Name="CurrencyUnit" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+    <Property Name="Note" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+    <NavigationProperty Name="Bill_Product" Relationship="minhhoa_demoModel.FK_Bill_Product_Bill" FromRole="Bill" ToRole="Bill_Product" />
+  </EntityType>
+  <Association Name="FK_Retail_Distributor">
+    <End Role="Distributor" Type="Self.Distributor" Multiplicity="1" />
+    <End Role="Retail" Type="Self.Retail" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Distributor">
+        <PropertyRef Name="ID" />
+      </Principal>
+      <Dependent Role="Retail">
+        <PropertyRef Name="DisID" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_ProductType_Product">
+    <End Role="Product" Type="Self.Product" Multiplicity="1" />
+    <End Role="ProductType" Type="Self.ProductType" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Product">
+        <PropertyRef Name="ID" />
+      </Principal>
+      <Dependent Role="ProductType">
+        <PropertyRef Name="ProductID" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_ProductType_Type">
+    <End Role="Type" Type="Self.Type" Multiplicity="1" />
+    <End Role="ProductType" Type="Self.ProductType" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Type">
+        <PropertyRef Name="ID" />
+      </Principal>
+      <Dependent Role="ProductType">
+        <PropertyRef Name="TypeID" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <EntityContainer Name="minhhoa_demoEntities" annotation:LazyLoadingEnabled="true">
+    <EntitySet Name="Distributors" EntityType="Self.Distributor" />
+    <EntitySet Name="Products" EntityType="Self.Product" />
+    <EntitySet Name="ProductTypes" EntityType="Self.ProductType" />
+    <EntitySet Name="Retails" EntityType="Self.Retail" />
+    <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagram" />
+    <EntitySet Name="Types" EntityType="Self.Type" />
+    <EntitySet Name="Bills" EntityType="Self.Bill" />
+    <AssociationSet Name="FK_Retail_Distributor" Association="Self.FK_Retail_Distributor">
+      <End Role="Distributor" EntitySet="Distributors" />
+      <End Role="Retail" EntitySet="Retails" />
+    </AssociationSet>
+    <AssociationSet Name="FK_ProductType_Product" Association="Self.FK_ProductType_Product">
+      <End Role="Product" EntitySet="Products" />
+      <End Role="ProductType" EntitySet="ProductTypes" />
+    </AssociationSet>
+    <AssociationSet Name="FK_ProductType_Type" Association="Self.FK_ProductType_Type">
+      <End Role="Type" EntitySet="Types" />
+      <End Role="ProductType" EntitySet="ProductTypes" />
+    </AssociationSet>
+    <FunctionImport Name="sp_GenNumberBil" ReturnType="Collection(String)" />
+    <EntitySet Name="Bill_Product" EntityType="minhhoa_demoModel.Bill_Product" />
+    <AssociationSet Name="FK_Bill_Product_Product" Association="minhhoa_demoModel.FK_Bill_Product_Product">
+      <End Role="Product" EntitySet="Products" />
+      <End Role="Bill_Product" EntitySet="Bill_Product" />
+    </AssociationSet>
+    <AssociationSet Name="FK_Bill_Product_Bill" Association="minhhoa_demoModel.FK_Bill_Product_Bill">
+      <End Role="Bill" EntitySet="Bills" />
+      <End Role="Bill_Product" EntitySet="Bill_Product" />
+    </AssociationSet>
+  </EntityContainer>
+  <EntityType Name="Bill_Product">
+    <Key>
+      <PropertyRef Name="BillID" />
+      <PropertyRef Name="ProductID" />
+    </Key>
+    <Property Name="BillID" Type="Int64" Nullable="false" />
+    <Property Name="ProductID" Type="Int64" Nullable="false" />
+    <Property Name="Quantity" Type="Int64" />
+    <Property Name="TypeID" Type="Int64" />
+    <Property Name="AmountSum" Type="Int64" />
+    <Property Name="Discount" Type="Int64" />
+    <Property Name="Tax" Type="Int64" />
+    <Property Name="FinalAmount" Type="Int64" />
+    <NavigationProperty Name="Product" Relationship="minhhoa_demoModel.FK_Bill_Product_Product" FromRole="Bill_Product" ToRole="Product" />
+    <NavigationProperty Name="Bill" Relationship="minhhoa_demoModel.FK_Bill_Product_Bill" FromRole="Bill_Product" ToRole="Bill" />
+  </EntityType>
+  <Association Name="FK_Bill_Product_Product">
+    <End Type="minhhoa_demoModel.Product" Role="Product" Multiplicity="1" />
+    <End Type="minhhoa_demoModel.Bill_Product" Role="Bill_Product" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Product">
+        <PropertyRef Name="ID" />
+      </Principal>
+      <Dependent Role="Bill_Product">
+        <PropertyRef Name="ProductID" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_Bill_Product_Bill">
+    <End Type="minhhoa_demoModel.Bill" Role="Bill" Multiplicity="1" />
+    <End Type="minhhoa_demoModel.Bill_Product" Role="Bill_Product" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Bill">
+        <PropertyRef Name="ID" />
+      </Principal>
+      <Dependent Role="Bill_Product">
+        <PropertyRef Name="BillID" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+</Schema>

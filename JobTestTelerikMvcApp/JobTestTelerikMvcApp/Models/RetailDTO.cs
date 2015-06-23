@@ -7,7 +7,7 @@ namespace JobTestTelerikMvcApp.Models
 {
     public class RetailDTO
     {
-        public string ID { get; set; }
+        public long ID { get; set; }
         public string Name { get; set; }
         public string FullAddress { get; set; }
 
