@@ -34,6 +34,12 @@
     <Property Name="Address" Type="nvarchar" MaxLength="255" />
     <Property Name="DisID" Type="bigint" Nullable="false" />
   </EntityType>
+  <!--Errors Found During Generation:
+warning 6013: The table/view 'minhhoa_demo.dbo.SaleOrder' does not have a primary key defined and no valid primary key could be inferred. This table/view has been excluded. To use the entity, you will need to review your schema, add the correct keys, and uncomment it.
+        <EntityType Name="SaleOrder">
+          <Property Name="Numer" Type="varchar" MaxLength="255" />
+          <Property Name="DateTime" Type="datetime" />
+        </EntityType>-->
   <EntityType Name="sysdiagrams">
     <Key>
       <PropertyRef Name="diagram_id" />
@@ -62,20 +68,19 @@
     <Property Name="RetailID" Type="bigint" />
     <Property Name="CurrencyUnit" Type="nvarchar" MaxLength="255" />
     <Property Name="Note" Type="nvarchar" MaxLength="255" />
+    <Property Name="Discount" Type="bigint" />
+    <Property Name="Tax" Type="bigint" />
+    <Property Name="FinalAmount" Type="bigint" />
   </EntityType>
   <EntityType Name="Bill_Product">
     <Key>
-      <PropertyRef Name="BillID" />
-      <PropertyRef Name="ProductID" />
+      <PropertyRef Name="ID" />
     </Key>
+    <Property Name="ID" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
     <Property Name="BillID" Type="bigint" Nullable="false" />
     <Property Name="ProductID" Type="bigint" Nullable="false" />
     <Property Name="Quantity" Type="bigint" />
     <Property Name="TypeID" Type="bigint" />
-    <Property Name="AmountSum" Type="bigint" />
-    <Property Name="Discount" Type="bigint" />
-    <Property Name="Tax" Type="bigint" />
-    <Property Name="FinalAmount" Type="bigint" />
   </EntityType>
   <Association Name="FK_Bill_Product_Bill">
     <End Role="Bill" Type="Self.Bill" Multiplicity="1" />

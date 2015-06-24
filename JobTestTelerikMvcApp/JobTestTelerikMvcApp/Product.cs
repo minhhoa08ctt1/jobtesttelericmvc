@@ -16,8 +16,8 @@ namespace JobTestTelerikMvcApp
     {
         public Product()
         {
-            this.ProductTypes = new HashSet<ProductType>();
             this.Bill_Product = new HashSet<Bill_Product>();
+            this.ProductTypes = new HashSet<ProductType>();
         }
     
         public string Name { get; set; }
@@ -25,7 +25,7 @@ namespace JobTestTelerikMvcApp
         public string IDNumber { get; set; }
         public double Price { get; set; }
     
-        public virtual ICollection<ProductType> ProductTypes { get; set; }
         public virtual ICollection<Bill_Product> Bill_Product { get; set; }
+        public virtual ICollection<ProductType> ProductTypes { get; set; }
     }
 }

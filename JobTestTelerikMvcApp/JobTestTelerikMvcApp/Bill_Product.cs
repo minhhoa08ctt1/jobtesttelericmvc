@@ -14,14 +14,11 @@ namespace JobTestTelerikMvcApp
     
     public partial class Bill_Product
     {
+        public long ID { get; set; }
         public long BillID { get; set; }
         public long ProductID { get; set; }
         public Nullable<long> Quantity { get; set; }
         public Nullable<long> TypeID { get; set; }
-        public Nullable<long> AmountSum { get; set; }
-        public Nullable<long> Discount { get; set; }
-        public Nullable<long> Tax { get; set; }
-        public Nullable<long> FinalAmount { get; set; }
     
         public virtual Product Product { get; set; }
         public virtual Bill Bill { get; set; }

@@ -1,5 +1,5 @@
 ﻿﻿@{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Edit";
 }
 @using System.Linq
 @section head
@@ -402,7 +402,7 @@
 <div class="container-fluid body-content">
     <div class="row">
         <div class="col-md-12">
-            <form action="@Url.Action("Create", "Sale")" class="form-horizontal" method="post" data-role="validator" novalidate="novalidate">
+            <form action="@Url.Action("Edit", "Sale")" class="form-horizontal" method="post" data-role="validator" novalidate="novalidate">
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <h3 class="panel-title"><b>Thêm mới báo cáo bán hàng</b></h3>
@@ -422,7 +422,7 @@
                                     <div class="form-group">
                                         <label class="control-label col-sm-4" for="email">Số phiếu:</label>
                                         <div class="col-sm-8">
-                                            <input class="k-textbox" id="VoucherID" name="VoucherID" readonly="readonly" value=@ViewData["Billnumber"]>
+                                            <input class="k-textbox" id="VoucherID" name="VoucherID" readonly="readonly" value=@ViewBag.Bill.BillNumber />
                                         </div>
                                     </div>
                                 </div>
@@ -430,7 +430,7 @@
                                     <div class="form-group">
                                         <label class="control-label col-sm-4" for="email">Ngày:</label>
                                         <div class="col-sm-8">
-                                            @Html.Kendo().DatePicker().Name("IODate").Start(CalendarView.Year).Depth(CalendarView.Year).Format("yyyy-MM-dd").Value(DateTime.Now.ToString("yyyy-MM-dd"))
+                                            @Html.Kendo().DatePicker().Name("IODate").Start(CalendarView.Year).Depth(CalendarView.Year).Format("yyyy-MM-dd").Value(@ViewBag.Bill.DateTime)
                                         </div>
                                     </div>
                                 </div>
@@ -438,7 +438,11 @@
                                     <div class="form-group">
                                         <label class="control-label col-sm-3" for="pwd">Điểm bán lẻ:</label>
                                         <div class="col-sm-9">
-                                            @Html.Kendo().DropDownList().Events(e => e.Change("retailerChange")).DataTextField("Name").DataValueField("ID").Filter(FilterType.Contains).OptionLabel("Chọn nhà bán lẽ...").AutoBind(false).HtmlAttributes(new { style = "width: 400px" }).Name("RetailerID").DataSource(source => { source.Read(read => { read.Action("getRetailList", "Sale"); }).ServerFiltering(true); }).SelectedIndex(0).HeaderTemplate("<div class=\"dropdown-header\"><span class=\"k-widget k-header\">ID</span><span class=\"k-widget k-header\">Tên</span></div>").Template("#if(data.ID) {#<span class=\"k-state-default\">#:data.ID#</span><span class=\"k-state-default\"><h3>#: data.Name #</h3><p>#: data.FullAddress #</p></span>#} else{#Chọn điểm bán lẻ#}#").ValueTemplate("#if(data.ID) {#<span>#:data.ID# | #:data.Name# #if(data.FullAddress){# | #:data.FullAddress# #}#</span>#} else{#<span>Chọn điểm bán lẻ</span>#}#")
+                                            @{
+                                                List<JobTestTelerikMvcApp.Models.RetailDTO> list = JobTestTelerikMvcApp.BUS.WebDB.getRetaiList();
+                                                int index = list.IndexOf(list.Where(w => w.ID.Equals(ViewBag.Bill.RetailID)).Select(s => s).FirstOrDefault());
+                                            }
+                                            @Html.Kendo().DropDownList().Events(e => e.Change("retailerChange")).DataTextField("Name").DataValueField("ID").Filter(FilterType.Contains).OptionLabel("Chọn nhà bán lẽ...").AutoBind(false).HtmlAttributes(new { style = "width: 400px" }).Name("RetailerID").DataSource(source => { source.Read(read => { read.Action("getRetailList", "Sale"); }).ServerFiltering(true); }).HeaderTemplate("<div class=\"dropdown-header\"><span class=\"k-widget k-header\">ID</span><span class=\"k-widget k-header\">Tên</span></div>").Template("#if(data.ID) {#<span class=\"k-state-default\">#:data.ID#</span><span class=\"k-state-default\"><h3>#: data.Name #</h3><p>#: data.FullAddress #</p></span>#} else{#Chọn điểm bán lẻ#}#").ValueTemplate("#if(data.ID) {#<span>#:data.ID# | #:data.Name# #if(data.FullAddress){# | #:data.FullAddress# #}#</span>#} else{#<span>Chọn điểm bán lẻ</span>#}#").SelectedIndex(index);
                                         </div>
                                     </div>
                                 </div>
@@ -467,9 +471,9 @@
                                         <label class="control-label col-sm-3" for="email">Tiền tệ:</label>
                                         <div class="col-sm-9">
                                             @*<span class="k-widget k-dropdown k-header" unselectable="on" role="listbox" aria-haspopup="true" aria-expanded="false" tabindex="0" aria-owns="CurrencyID_listbox" aria-disabled="false" aria-readonly="false" aria-busy="false" aria-activedescendant="CurrencyID_option_selected" style=""><span unselectable="on" class="k-dropdown-wrap k-state-default"><span unselectable="on" class="k-input">VND (1)</span><span unselectable="on" class="k-select"><span unselectable="on" class="k-icon k-i-arrow-s">select</span></span></span><input id="CurrencyID" name="CurrencyID" type="text" data-role="dropdownlist" style="display: none;"></span>
-                                                <script>
-                                                    jQuery(function () { jQuery("#CurrencyID").kendoDropDownList({ "dataSource": [{ "Text": "VND (1)", "Value": "VND" }, { "Text": "JPY (270)", "Value": "JPY" }, { "Text": "USD (22,000)", "Value": "USD" }], "dataTextField": "Text", "dataValueField": "Value" }); });
-                                                </script>*@
+                                        <script>
+                                            jQuery(function () { jQuery("#CurrencyID").kendoDropDownList({ "dataSource": [{ "Text": "VND (1)", "Value": "VND" }, { "Text": "JPY (270)", "Value": "JPY" }, { "Text": "USD (22,000)", "Value": "USD" }], "dataTextField": "Text", "dataValueField": "Value" }); });
+                                        </script>*@
                                             @Html.Kendo().DropDownList().Name("CurrencyID").DataTextField("Name").DataValueField("ID").AutoBind(false).HtmlAttributes(new { style = "width: 400px" }).DataSource(source => { source.Read(read => read.Action("GetMoneyTypeList", "Sale")); }).Value("0")
                                         </div>
                                     </div>
@@ -489,10 +493,10 @@
                                         <label class="control-label col-md-4">% Chiết khấu:</label>
                                         <div class="col-md-4">
                                             @*<span class="k-widget k-numerictextbox"><span class="k-numeric-wrap k-state-default"><input type="text" class="k-formatted-value k-input" tabindex="0" aria-disabled="false" aria-readonly="false" style="display: inline-block;"><input data-val="true" data-val-number="The field Discount must be a number." id="Discount" name="Discount" type="text" value="0" data-role="numerictextbox" role="spinbutton" class="k-input" aria-valuenow="0" aria-disabled="false" aria-readonly="false" style="display: none;"><span class="k-select"><span unselectable="on" class="k-link"><span unselectable="on" class="k-icon k-i-arrow-n" title="Increase value">Increase value</span></span><span unselectable="on" class="k-link"><span unselectable="on" class="k-icon k-i-arrow-s" title="Decrease value">Decrease value</span></span></span></span></span>
-                                                <script>
-                                                    jQuery(function () { jQuery("#Discount").kendoNumericTextBox({ "change": DiscountChange }); });
-                                                </script>*@
-                                            @(Html.Kendo().NumericTextBox().Events(e => e.Change("DiscountChange")).Name("Discount").HtmlAttributes(new { style = "width:100%" }))
+                                        <script>
+                                            jQuery(function () { jQuery("#Discount").kendoNumericTextBox({ "change": DiscountChange }); });
+                                        </script>*@
+                                            @(Html.Kendo().NumericTextBox().Events(e => e.Change("DiscountChange")).Name("#Discount").HtmlAttributes(new { style = "width:100%" }))
                                         </div>
                                         <div class="col-md-4">
                                             <span class="input-group-addon"><span id="totalDiscount"></span> VNĐ</span>
@@ -504,10 +508,10 @@
                                         <label class="control-label col-sm-3">Thuế:</label>
                                         <div class="col-sm-4">
                                             @*<span class="k-widget k-numerictextbox"><span class="k-numeric-wrap k-state-default"><input type="text" class="k-formatted-value k-input" tabindex="0" aria-disabled="false" aria-readonly="false" style="display: inline-block;"><input data-val="true" data-val-number="The field TaxValue must be a number." id="TaxValue" name="TaxValue" type="text" value="0" data-role="numerictextbox" role="spinbutton" class="k-input" aria-valuenow="0" aria-disabled="false" aria-readonly="false" style="display: none;"><span class="k-select"><span unselectable="on" class="k-link"><span unselectable="on" class="k-icon k-i-arrow-n" title="Increase value">Increase value</span></span><span unselectable="on" class="k-link"><span unselectable="on" class="k-icon k-i-arrow-s" title="Decrease value">Decrease value</span></span></span></span></span>
-                                                <script>
-                                                    jQuery(function () { jQuery("#TaxValue").kendoNumericTextBox({ "change": TaxChange }); });
-                                                </script>*@
-                                            @(Html.Kendo().NumericTextBox().Events(e => e.Change("TaxChange")).Name("TaxValue").HtmlAttributes(new { style = "width:100%" }))
+                                        <script>
+                                            jQuery(function () { jQuery("#TaxValue").kendoNumericTextBox({ "change": TaxChange }); });
+                                        </script>*@
+                                            @(Html.Kendo().NumericTextBox().Events(e => e.Change("TaxChange")).Name("#TaxValue").HtmlAttributes(new { style = "width:100%" }))
                                         </div>
                                         <div class="col-md-5">
                                             <span class="input-group-addon"><span id="totalTax"></span> VNĐ</span>

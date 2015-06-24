@@ -44,4 +44,3 @@ C:\Users\MH\Documents\Visual Studio 2013\Projects\JobTestTelerikMvcApp\JobTestTe
 C:\Users\MH\Documents\Visual Studio 2013\Projects\JobTestTelerikMvcApp\JobTestTelerikMvcApp\bin\zh-CN\Kendo.Mvc.resources.dll
 C:\Users\MH\Documents\Visual Studio 2013\Projects\JobTestTelerikMvcApp\JobTestTelerikMvcApp\obj\Debug\JobTestTelerikMvcApp.dll
 C:\Users\MH\Documents\Visual Studio 2013\Projects\JobTestTelerikMvcApp\JobTestTelerikMvcApp\obj\Debug\JobTestTelerikMvcApp.pdb
-C:\Users\MH\Documents\Visual Studio 2013\Projects\JobTestTelerikMvcApp\JobTestTelerikMvcApp\obj\Debug\JobTestTelerikMvcApp.csprojResolveAssemblyReference.cache

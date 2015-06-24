@@ -26,6 +26,9 @@ namespace JobTestTelerikMvcApp
         public Nullable<long> RetailID { get; set; }
         public string CurrencyUnit { get; set; }
         public string Note { get; set; }
+        public Nullable<long> Discount { get; set; }
+        public Nullable<long> Tax { get; set; }
+        public Nullable<long> FinalAmount { get; set; }
     
         public virtual ICollection<Bill_Product> Bill_Product { get; set; }
     }

@@ -8,7 +8,7 @@ namespace JobTestTelerikMvcApp.BUS
 {
     public class WebDB
     {
-        static minhhoa_demoEntities entity;
+        public static minhhoa_demoEntities entity;
         static WebDB()
         {
             entity = new minhhoa_demoEntities();

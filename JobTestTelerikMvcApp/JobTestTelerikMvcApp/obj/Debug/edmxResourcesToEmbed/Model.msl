@@ -67,23 +67,23 @@
           <ScalarProperty Name="RetailID" ColumnName="RetailID" />
           <ScalarProperty Name="CurrencyUnit" ColumnName="CurrencyUnit" />
           <ScalarProperty Name="Note" ColumnName="Note" />
+          <ScalarProperty Name="Discount" ColumnName="Discount" />
+          <ScalarProperty Name="Tax" ColumnName="Tax" />
+          <ScalarProperty Name="FinalAmount" ColumnName="FinalAmount" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="Bill_Product">
+      <EntityTypeMapping TypeName="minhhoa_demoModel.Bill_Product">
+        <MappingFragment StoreEntitySet="Bill_Product">
+          <ScalarProperty Name="ID" ColumnName="ID" />
+          <ScalarProperty Name="BillID" ColumnName="BillID" />
+          <ScalarProperty Name="ProductID" ColumnName="ProductID" />
+          <ScalarProperty Name="Quantity" ColumnName="Quantity" />
+          <ScalarProperty Name="TypeID" ColumnName="TypeID" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>
     <FunctionImportMapping FunctionImportName="sp_GenNumberBil" FunctionName="minhhoa_demoModel.Store.sp_GenNumberBil" />
-    <EntitySetMapping Name="Bill_Product">
-      <EntityTypeMapping TypeName="minhhoa_demoModel.Bill_Product">
-        <MappingFragment StoreEntitySet="Bill_Product">
-          <ScalarProperty Name="FinalAmount" ColumnName="FinalAmount" />
-          <ScalarProperty Name="Tax" ColumnName="Tax" />
-          <ScalarProperty Name="Discount" ColumnName="Discount" />
-          <ScalarProperty Name="AmountSum" ColumnName="AmountSum" />
-          <ScalarProperty Name="TypeID" ColumnName="TypeID" />
-          <ScalarProperty Name="Quantity" ColumnName="Quantity" />
-          <ScalarProperty Name="ProductID" ColumnName="ProductID" />
-          <ScalarProperty Name="BillID" ColumnName="BillID" />
-        </MappingFragment>
-      </EntityTypeMapping>
-    </EntitySetMapping>
   </EntityContainerMapping>
 </Mapping>

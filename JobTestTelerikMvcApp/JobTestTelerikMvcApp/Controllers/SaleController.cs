@@ -2,6 +2,7 @@
 using JobTestTelerikMvcApp.Models;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
@@ -11,21 +12,64 @@ namespace JobTestTelerikMvcApp.Controllers
     public class SaleController : Controller
     {
         // GET: Sale
+      [AcceptVerbs(HttpVerbs.Get)]
         public ActionResult Index()
-        {
-            string numberBill=WebDB.genNumerBill();
-            ViewData["numberBill"] = numberBill;
+        {        
+          string numberBill=WebDB.genNumerBill();
+            ViewData["BillNumber"] = numberBill;
             return View();
         }
 
-        [HttpPost]
+        [AcceptVerbs(HttpVerbs.Post)]
+        public ActionResult Create(string type)
+        {
+            try
+            {
+                string NumberBill = Request.Form["VoucherID"].ToString();
+                string Description = Request.Form["Description"].ToString();
+                string IODate = Request.Form["IODate"].ToString();
+                string RetailID = Request.Form["RetailerID"].ToString();
+                string DisID = Request.Form["RetailerDetail"].ToString();
+                string CurrencyID = Request.Form["CurrencyID"].ToString();
+                string[] GoodsIDAr = Request.Form["GoodsID[]"].Split(',');
+                string[] UnitIDAr = Request.Form["UnitID[]"].Split(',');
+                string[] QuantityAr = Request.Form["Quantity[]"].Split(',');
+                string Discount = Request.Form["Discount"];
+                string Tax = Request.Form["TaxValue"];
+                Bill b = new Bill();
+                b.BillNumber = NumberBill;
+                b.DateTime = DateTime.ParseExact(IODate, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                b.CurrencyUnit = CurrencyID;
+                b.RetailID = long.Parse(RetailID);
+                b.Name = "Trần Minh Hòa";
+                b.Discount = long.Parse(Discount);
+                b.Tax = long.Parse(Tax);
+                b.Note = Description;
+                WebDB.entity.Bills.Add(b);
+                WebDB.entity.SaveChanges();
+                for (int i = 0; i < GoodsIDAr.Length; i++)
+                {
+                    Bill_Product b_p = new Bill_Product();
+                    b_p.BillID = b.ID;
+                    b_p.ProductID = long.Parse(GoodsIDAr[i]);
+                    b_p.Quantity = long.Parse(QuantityAr[i]);
+                    b_p.TypeID = long.Parse(UnitIDAr[i]);
+                    b.Bill_Product.Add(b_p);
+                }
+                WebDB.entity.SaveChanges();
+                TempData["Bill"] = b;
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+            return RedirectToAction("Edit");
+        }
+
         public ActionResult Edit()
         {
-           string NumberBill=Request.Form["VoucherID"].ToString();
-           string IODate = Request.Form["IODate"].ToString();
-           string RetailID = Request.Form["RetailerID"].ToString();
-           string GoodsIDAr=Request.Form["GoodsID[]"];
-           return View();
+            ViewBag.Bill = TempData["Bill"] as Bill;
+            return View();
         }
         public JsonResult GetMoneyTypeList()
         {
@@ -43,7 +87,7 @@ namespace JobTestTelerikMvcApp.Controllers
         {
             return WebDB.getDis(ID);
         }
-        public ActionResult getRetailList(string filter)
+        public JsonResult getRetailList(string filter)
         {
             if (Request.QueryString.AllKeys.Contains("filter[filters][0][value]"))
             {
