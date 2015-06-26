@@ -1,0 +1,587 @@
+﻿﻿@{
+    ViewBag.Title = "Edit";
+}
+@section head
+{
+    <link href="@Url.Content("~/Content/Create2.css")" rel="stylesheet" type="text/css" />
+    <script type="text/javascript">
+    function SelectRetail() {
+        @if(ViewBag.Bill.RetailID!=-1){
+                  List<JobTestTelerikMvcApp.Models.RetailDTO> list = JobTestTelerikMvcApp.BUS.WebDB.getRetaiList();
+                  int index = list.IndexOf(list.Where(w => w.ID.Equals(ViewBag.Bill.RetailID)).Select(s => s).ToList().ElementAt(0))+1;
+
+            @:var RetailDrp = $("#RetailerID").data("kendoDropDownList");
+                    @:RetailDrp.select(@index);
+                    }
+            else
+            {
+                 @:var RetailDrp = $("#RetailerID").data("kendoDropDownList");
+            @:RetailDrp.select(0);
+            }
+    }
+
+    function SelectCurrency() {
+        var CurrencyDrp = $("#CurrencyID").data("kendoDropDownList");
+        @{
+                int unitIndex=-1;
+            }
+        @if (string.IsNullOrEmpty(ViewBag.Bill.CurrencyUnit)==false)
+            {
+                 var currencyList = JobTestTelerikMvcApp.BUS.WebDB.getMTList();
+                 var dto = currencyList.Where(w => w.ID == ViewBag.Bill.CurrencyUnit).Select(s => s).ToList();
+                if(dto.Count==1)
+                {
+                    var dto2= dto.ElementAt(0);
+                    unitIndex = currencyList.IndexOf(dto2);
+                }
+
+           }
+        @if(unitIndex>=0)
+           {
+            @:CurrencyDrp.select(@unitIndex);
+                                                                               }
+    }
+    function onChangeDs(e) {
+        //update the aggregate columns
+        //var dataSource = this.dataSource;
+        //e.model.one("change", function () {
+        //dataSource.one("change", function () {
+        //dataSource.aggregates().Quantity.sum;
+        //});
+        //dataSource.fetch();
+        //});
+        var QuanSum = 0;
+        var AmountSum = 0;
+        var RowNum = 0;
+        var theGridData = $("#TSaleDailyGoods").data("kendoGrid").dataSource.data();
+        $(theGridData).each(function (index, item) {
+            QuanSum += Number(item.Quantity);
+            AmountSum += Number(item.OfferAmount);
+            RowNum++;
+        });
+        $("#QuanSum").text(QuanSum); //This was the second part of the answer
+        $("#AmountSum").html(format("#,###", AmountSum) + "&nbspVNĐ" + "<input type='hidden' id='AmountSumHidden' value='" + AmountSum + "'/>");
+        $("#RowNum").text(RowNum);
+        UpdateFinalAmount();
+    }
+    $(window).load(function () {
+        UpdateFinalAmount();
+    });
+    $(document).ready(function () {
+        $(".k-grid-Add").click(function (ev) {
+            // your code
+            //alert("hello");
+            var grid = $("#TSaleDailyGoods").data("kendoGrid");
+            //var rn = $("#TSaleDailyGoods").data("kendoGrid").data.length;
+            //var rn = grid.tbody.find("tr").length;
+            var targetIndex = 0;
+            grid.addRow();
+            var newrowdata = grid.dataItem(grid.tbody.find("tr:eq(" + targetIndex + ")"));
+            newrowdata.GoodsID = foreignData[0].GoodsID;
+            newrowdata.UnitID = foreignUnitData[0].Value;
+            newrowdata.Quantity = "1";
+            newrowdata.OfferPrice = unitPriceValues[foreignData[0].GoodsID];
+            newrowdata.OfferAmount = newrowdata.Quantity * unitPriceValues[foreignData[0].GoodsID];
+            //newrowdata.GoodsName = "New Email";
+            grid.refresh();
+            //grid.editCell(grid.tbody.find(">tr>td:first"));
+        });
+    });
+
+
+    function retailerChange() {
+
+        //console.log(this.value());
+        $("#RetailerID").val(this.value());
+        if (this.value() == "") {
+            $("#RetailerDetail").val("");
+        } else {
+            $.get("/Sale/GetRetailerDetail" + "/" + this.value(), function (data) {
+                $("#RetailerDetail").val(data);
+            });
+
+            return;
+            $.get("/Sale/GetUnitPriceForPartner" + "/" + this.value(), function (data) {
+                foreignData = data;
+                for (var i = 0; i < foreignData.length; i++) {
+                    unitPriceValues[foreignData[i].GoodsID] = foreignData[i].Price;
+                }
+                var y = $("#TSaleDailyGoods").data("kendoGrid");
+
+                if (y.dataItems()[0] != undefined) {
+                    var k = y.dataItems();
+                    for (var i = 0; i < k.length; i++) {
+                        m = k[i];
+                        m.set("Amount", k[i].Quantity * unitPriceValues[k[i].GoodsID]);
+                    }
+                    y.refresh();
+
+                    var x = $('#totalAmount');
+                    var ttt = x.attr('totalAmount');
+                    if (ttt == undefined) totalAmount = 0;
+                    else totalAmount = parseFloat(ttt);
+
+                    UpdateFinalAmount();
+                }
+            });
+        }
+
+    }
+    var foreignData = [];
+    $.ajax({
+        url: '/Sale/GetProductList',
+        async: false,
+        dataType: 'json',
+        success: function (data) {
+            for (var i = 0; i < data.length; i++) {
+                foreignData.push({ GoodsID: data[i].GoodsID, GoodsName: data[i].GoodsName, Price: data[i].Price, WholesalePrice: data[i].Price });
+            }
+        }
+    });
+
+    //$.get("Sale/GetProductList", function (data) {
+    //for(var i=0;i<data.length;i++)
+    //{
+    //foreignData.push({GoodsID:data[i].GoodsID,GoodsName:data[i].GoodsName,Price:data[i].Price,WholesalePrice:data[i].Price});
+    //}
+    //});
+
+
+    var foreignValues = [];
+    for (var i = 0; i < foreignData.length; i++) {
+        foreignValues[foreignData[i].GoodsID] = foreignData[i].GoodsName;
+    }
+
+    var unitPriceValues = {};
+    for (var i = 0; i < foreignData.length; i++) {
+        unitPriceValues[foreignData[i].GoodsID] = foreignData[i].Price;
+    }
+
+    function GetUnitPrice(data) {
+        var result = unitPriceValues[data.GoodsID];
+        return result;
+    }
+
+    var discount = 0;
+    var tax = 0;
+    var totalAmount = 0;
+    function DiscountChange(e) {
+        discount = this.value();
+        UpdateFinalAmount();
+    }
+    function TaxChange(e) {
+        tax = this.value();
+        UpdateFinalAmount();
+    }
+    function UpdateFinalAmount() {
+        try {
+            var x = $('#AmountSumHidden');
+            totalAmount = Number(x.val());
+
+            discount = $("#Discount").val();
+
+            var totalDiscount = totalAmount * discount / 100;
+            $('#totalDiscount').text(format('#,###', totalDiscount));
+
+            tax = $("#TaxValue").val();
+
+            var totalTax = (totalAmount/*-totalDiscount*/) * tax / 100;
+            $('#totalTax').text(format('#,###', totalTax));
+
+            finalAmount = totalAmount - totalDiscount + totalTax;
+            $('#finalAmount').text(format('#,###', finalAmount));
+        }
+        catch (err)
+        { }
+    }
+
+    // UpdateFinalAmount();
+
+    function onChange(e) {
+        if (e.action == "itemchange") {
+            if (e.field == "GoodsID") {
+                var model = e.items[0];
+                x = model;
+                model["OfferPrice"] = unitPriceValues[model.GoodsID];
+                model["OfferAmount"] = unitPriceValues[model.GoodsID] * model.Quantity;
+
+            }
+
+            if (e.field == "Quantity" || e.field == "OfferAmount") {
+                var model = e.items[0];
+                //model.set("OfferAmount", unitPriceValues[model.GoodsID] * model.Quantity);
+                model["OfferAmount"] = unitPriceValues[model.GoodsID] * model.Quantity;
+            }
+        }
+
+        var x = $('#AmountSum');
+        //var ttt = x.attr('AmountSum');
+        //if (ttt == undefined) totalAmount = 0;
+        //else totalAmount = parseFloat(ttt);
+        totalAmount = Number(x.text());
+        UpdateFinalAmount();
+        var y = $("#TSaleDailyGoods").data("kendoGrid");
+        y.refresh();
+    }
+    function onChange2(e) {
+
+        // this.refresh();
+        rowNumber = 0;
+        x = e;
+        if (e.action == "itemchange") {
+            if (e.field == "GoodsID" || e.field == "UnitPrice") {
+                var model = e.items[0];
+                x = model;
+                model.set("UnitPrice", unitPriceValues2[model.GoodsID]);
+                model.set("Amount", unitPriceValues2[model.GoodsID] * model.Quantity);
+            }
+
+            if (e.field == "Quantity" || e.field == "Amount") {
+                var model = e.items[0];
+                model.set("Amount", unitPriceValues2[model.GoodsID] * model.Quantity);
+            }
+        }
+
+        var y = $("#TSaleDailyInstocks").data("kendoGrid");
+        y.refresh(); rowNumber = 0;
+    }
+
+    function onChange3(e) {
+
+        // this.refresh();
+        rowNumber = 0;
+        x = e;
+        if (e.action == "itemchange") {
+            if (e.field == "GoodsID") {
+                var model = e.items[0];
+                x = model;
+                model.set("UnitPrice", unitPriceValues2[model.GoodsID]);
+            }
+        }
+
+        var y = $("#T_SaleDailyRevokesViewModel").data("kendoGrid");
+        y.refresh(); rowNumber = 0;
+    }
+
+
+
+
+    var unitPriceValues2 = {};
+    for (var i = 0; i < foreignData.length; i++) {
+        unitPriceValues2[foreignData[i].GoodsID] = foreignData[i].WholesalePrice;
+    }
+
+    //var foreignUnitData = [{ "Selected": false, "Text": "Chai", "Value": "CH" }, { "Selected": false, "Text": "Hộp", "Value": "HO" }, { "Selected": false, "Text": "Thùng", "Value": "TH" }];
+    var foreignUnitData = [];
+    $.ajax({
+        url: '/Sale/GetUnitList',
+        async: false,
+        dataType: 'json',
+        success: function (data) {
+            for (var i = 0; i < data.length; i++) {
+                foreignUnitData.push({ Selected: false, Text: data[i].UnitName, Value: data[i].UnitID });
+            }
+        }
+    });
+
+    var foreignUnitValues = {};
+    for (var i = 0; i < foreignUnitData.length; i++) {
+        foreignUnitValues[foreignUnitData[i].Value] = foreignUnitData[i].Text;
+    }
+    function filterRetailer() {
+        return
+        {
+            //filter: $("#RetailerID").data("kendoDropDownList").;
+        };
+    }
+
+    function index(dataItem) {
+        var data = $("#TSaleDailyGoods").data("kendoGrid").dataSource.data();
+
+        return data.indexOf(dataItem);
+    }
+    function index2(dataItem) {
+        var data = $("#TSaleDailyInstocks").data("kendoGrid").dataSource.data();
+
+        return data.indexOf(dataItem);
+    }
+    function index3(dataItem) {
+        var data = $("#T_SaleDailyRevokesViewModel").data("kendoGrid").dataSource.data();
+
+        return data.indexOf(dataItem);
+    }
+
+    var rowNumber = 0;
+    var rowNumber2 = 0;
+    var rowNumber3 = 0;
+
+    function resetRowNumber(e) {
+        rowNumber = 0;
+    }
+    function resetRowNumber2(e) {
+        rowNumber2 = 0;
+    }
+    function resetRowNumber3(e) {
+        rowNumber3 = 0;
+    }
+
+    function renderNumber(data) {
+        return ++rowNumber;
+    }
+    function renderNumber2(data) {
+        return ++rowNumber2;
+    }
+    function renderNumber3(data) {
+        return ++rowNumber3;
+    }
+
+    $(function () {
+        $("form").kendoValidator();
+    });
+
+    function format(format, data) {
+        return $.formatNumber(data, { format: format, locale: "us" });
+    }
+    </script>
+
+    <style>
+        .dropdown-header {
+            font-size: 1.2em;
+            padding: 0;
+        }
+
+            .dropdown-header > span {
+                -webkit-box-sizing: border-box;
+                -moz-box-sizing: border-box;
+                box-sizing: border-box;
+                text-align: left;
+                display: inline-block;
+                border-style: solid;
+                border-width: 0 0 1px 1px;
+                padding: .3em .6em;
+                width: 312px;
+            }
+
+                .dropdown-header > span:first-child {
+                    width: 82px;
+                    border-left-width: 0;
+                }
+
+        .demo-section {
+            width: 400px;
+            margin: 35px auto 50px;
+            padding: 30px;
+        }
+
+            .demo-section h2 {
+                text-transform: uppercase;
+                font-size: 1.2em;
+                margin-bottom: 10px;
+            }
+
+        .selected-value {
+            float: left;
+            width: 16px;
+            margin: 0 4px;
+        }
+
+        #RetailerID-list .k-item > span {
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+            display: inline-block;
+            border-style: solid;
+            border-width: 0 0 1px 1px;
+            vertical-align: top;
+            min-height: 65px;
+            width: 79%;
+            padding: .6em 0 0 .6em;
+        }
+
+            #RetailerID-list .k-item > span:first-child {
+                width: 77px;
+                border-left-width: 0;
+                padding: .6em 0 0 0;
+            }
+
+        #RetailerID-list img {
+            -moz-box-shadow: 0 0 2px rgba(0, 0, 0, .4);
+            -webkit-box-shadow: 0 0 2px rgba(0, 0, 0, .4);
+            box-shadow: 0 0 2px rgba(0, 0, 0, .4);
+            width: 70px;
+            height: 70px;
+        }
+
+        #RetailerID-list h3 {
+            font-size: 1.6em;
+            margin: 0;
+            padding: 0;
+        }
+
+        #RetailerID-list p {
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: initial !important;
+        }
+
+        #TSaleDailyGoods {
+            padding: 3px;
+            border-color: black;
+        }
+
+        #TSaleDailyInstocks {
+            padding: 3px;
+            border-color: yellowgreen;
+        }
+
+        #T_SaleDailyRevokesViewModel {
+            padding: 3px;
+            border-color: blue;
+        }
+    </style>
+}
+<h2>Sale</h2>
+<div class="container-fluid body-content">
+    <div class="row">
+        <div class="col-md-12">
+            <form action="@Url.Action("Edit", "Sale", new { id = @ViewBag.Bill.BillNumber})" class="form-horizontal" method="post" data-role="validator" novalidate="novalidate">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title"><b>Thêm mới báo cáo bán hàng</b></h3>
+                        <span> Người lập: Trần Minh Hòa</span>
+                    </div>
+                    <div class="panel-body">
+
+                        <fieldset>
+                            <div>
+                                @Html.ValidationSummary("Update unsucessful")
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label class="control-label col-sm-4" for="email">Số phiếu:</label>
+                                        <div class="col-sm-8">
+                                            <input class="k-textbox" id="VoucherID" name="VoucherID" readonly="readonly" value=@ViewBag.Bill.BillNumber />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label class="control-label col-sm-4" for="email">Ngày:</label>
+                                        <div class="col-sm-8">
+                                            @Html.Kendo().DatePicker().Name("IODate").Start(CalendarView.Year).Depth(CalendarView.Year).Format("yyyy-MM-dd").Value(@ViewBag.Bill.DateTime)
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="control-label col-sm-3" for="pwd">Điểm bán lẻ:</label>
+                                        <div class="col-sm-9">
+                                            @Html.Kendo().DropDownList().Events(e => e.Change("retailerChange")).DataTextField("Name").DataValueField("ID").Filter(FilterType.Contains).OptionLabel("Chọn nhà bán lẽ...").AutoBind(true).HtmlAttributes(new { style = "width: 400px" }).Name("RetailerID").DataSource(source => { source.Read(read => { read.Action("getRetailList", "Sale"); }).ServerFiltering(true); }).HeaderTemplate("<div class=\"dropdown-header\"><span class=\"k-widget k-header\">ID</span><span class=\"k-widget k-header\">Tên</span></div>").Template("#if(data.ID) {#<span class=\"k-state-default\">#:data.ID#</span><span class=\"k-state-default\"><h3>#: data.Name #</h3><p>#: data.FullAddress #</p></span>#} else{#Chọn điểm bán lẻ#}#").ValueTemplate("#if(data.ID) {#<span>#:data.ID# | #:data.Name# #if(data.FullAddress){# | #:data.FullAddress# #}#</span>#} else{#<span>Chọn điểm bán lẻ</span>#}#").Events(e => e.DataBound("SelectRetail"))
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 col-md-offset-6">
+                                    <div class="form-group">
+                                        <label class="control-label col-sm-3" for="pwd">Nhà phân phối:</label>
+                                        <div class="col-sm-9">
+                                            <input class="k-textbox" id="RetailerDetail" name="RetailerDetail" readonly="readonly" value=@Html.Raw(ViewBag.DisName)>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="control-label col-sm-2" for="email">Ghi chú:</label>
+                                        <div class="col-sm-10">
+                                            <input class="k-textbox" id="Description" name="Description" value=@Html.Raw(ViewBag.Bill.Note)>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="control-label col-sm-3" for="email">Tiền tệ:</label>
+                                        <div class="col-sm-9">
+                                            @*<span class="k-widget k-dropdown k-header" unselectable="on" role="listbox" aria-haspopup="true" aria-expanded="false" tabindex="0" aria-owns="CurrencyID_listbox" aria-disabled="false" aria-readonly="false" aria-busy="false" aria-activedescendant="CurrencyID_option_selected" style=""><span unselectable="on" class="k-dropdown-wrap k-state-default"><span unselectable="on" class="k-input">VND (1)</span><span unselectable="on" class="k-select"><span unselectable="on" class="k-icon k-i-arrow-s">select</span></span></span><input id="CurrencyID" name="CurrencyID" type="text" data-role="dropdownlist" style="display: none;"></span>
+                                                <script>
+                                                    jQuery(function () { jQuery("#CurrencyID").kendoDropDownList({ "dataSource": [{ "Text": "VND (1)", "Value": "VND" }, { "Text": "JPY (270)", "Value": "JPY" }, { "Text": "USD (22,000)", "Value": "USD" }], "dataTextField": "Text", "dataValueField": "Value" }); });
+                                                </script>*@
+                                            @{
+    //var currencyList = JobTestTelerikMvcApp.BUS.WebDB.getMTList();
+    //var dto = currencyList.Where(w => w.ID == ViewBag.Bill.CurrencyUnit).Select(s => s).ToList().ElementAt(0);
+    //int unitIndex = currencyList.IndexOf(dto);
+                                            }
+                                            @Html.Kendo().DropDownList().Name("CurrencyID").DataTextField("Name").DataValueField("ID").AutoBind(true).HtmlAttributes(new { style = "width: 400px" }).DataSource(source => { source.Read(read => read.Action("GetMoneyTypeList", "Sale")); }).Events(e => e.DataBound("SelectCurrency"))
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    @{
+                                        List<JobTestTelerikMvcApp.Models.SaleGridDTO> gridData = JobTestTelerikMvcApp.BUS.WebDB.getGridData(ViewBag.Bill.ID);
+                                    }
+                                    @(Html.Kendo().Grid<JobTestTelerikMvcApp.Models.SaleGridDTO>().BindTo(gridData).Name("TSaleDailyGoods").Events(s => s.DataBinding("resetRowNumber").DataBound("onChangeDs")).Columns(columns =>
+                                {
+                                    columns.Bound(p => p.AutoID).Filterable(false).Width(30).Title("#").ClientTemplate("#=renderNumber(data)# <input type='hidden' name='GoodsID[]' value='#= GoodsID #' />"); columns.Bound(p => p.GoodsID).EditorTemplateName("GoodsIdEditor").Width(350).Title("Tên hàng hóa").ClientTemplate("#= foreignValues[GoodsID] #").ClientFooterTemplate("Total: #=count#").FooterHtmlAttributes(new { @id = "RowNum" }); columns.Bound(p => p.UnitID).Width(80).Title("ĐVT").ClientTemplate("#= foreignUnitValues[UnitID] # <input type='hidden' name='UnitID[]' value='#= UnitID #' />").EditorTemplateName("UnitIdEditor"); columns.Bound(p => p.Quantity).Width(70).Title("SL").EditorTemplateName("Number").ClientTemplate("#= Quantity #<input type='hidden' name='Quantity[]' value='#= Quantity #' />").ClientFooterTemplate("#=sum#").FooterHtmlAttributes(new { @id = "QuanSum" }); columns.Bound(p => p.OfferPrice).Width(140).Title("Đơn giá").ClientTemplate("#= format('\\#,\\#\\#\\#',GetUnitPrice(data)) # VNĐ"); columns.Bound(p => p.OfferAmount).Width(180).Title("Thành tiền").ClientTemplate("#= format('\\#,\\#\\#\\#',OfferAmount) # VNĐ").ClientFooterTemplate("<span style='float:right;' id='AmountSum'>#= kendo.toString(sum,'n')# VNĐ</span>").FooterHtmlAttributes(new { @id = "AmountSum" }); columns.Command(command => command.Destroy().HtmlAttributes(new { @onclick = "UpdateFinalAmount" }).Text("Xóa")).Width(50);
+                                }).Scrollable().HtmlAttributes(new { style = "height:430px;" }).DataSource(dataSource => dataSource.Ajax().Events(e => e.Change("onChange")).PageSize(20).Model(model => { model.Id(p => p.AutoID); model.Field(p => p.AutoID).Editable(false); model.Field(p => p.OfferPrice).Editable(false); model.Field(p => p.OfferAmount).Editable(false); }).Aggregates(aggregates => { aggregates.Add(p => p.GoodsID).Count(); aggregates.Add(p => p.Quantity).Sum(); aggregates.Add(p => p.OfferAmount).Sum(); })).ToolBar(t => t.Custom().HtmlAttributes(new { @onclick = "return false" }).Name("Add").Text("Thêm hàng bán")).Editable(editable => editable.Mode(GridEditMode.InCell)))
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">% Chiết khấu:</label>
+                                        <div class="col-md-4">
+                                            @*<span class="k-widget k-numerictextbox"><span class="k-numeric-wrap k-state-default"><input type="text" class="k-formatted-value k-input" tabindex="0" aria-disabled="false" aria-readonly="false" style="display: inline-block;"><input data-val="true" data-val-number="The field Discount must be a number." id="Discount" name="Discount" type="text" value="0" data-role="numerictextbox" role="spinbutton" class="k-input" aria-valuenow="0" aria-disabled="false" aria-readonly="false" style="display: none;"><span class="k-select"><span unselectable="on" class="k-link"><span unselectable="on" class="k-icon k-i-arrow-n" title="Increase value">Increase value</span></span><span unselectable="on" class="k-link"><span unselectable="on" class="k-icon k-i-arrow-s" title="Decrease value">Decrease value</span></span></span></span></span>
+                                                <script>
+                                                    jQuery(function () { jQuery("#Discount").kendoNumericTextBox({ "change": DiscountChange }); });
+                                                </script>*@
+                                            @(Html.Kendo().NumericTextBox().Events(e => e.Change("DiscountChange")).Name("Discount").HtmlAttributes(new { style = "width:100%" }).Value(@ViewBag.Bill.Discount))
+                                        </div>
+                                        <div class="col-md-4">
+                                            <span class="input-group-addon"><span id="totalDiscount"></span> VNĐ</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="control-label col-sm-3">Thuế:</label>
+                                        <div class="col-sm-4">
+                                            @*<span class="k-widget k-numerictextbox"><span class="k-numeric-wrap k-state-default"><input type="text" class="k-formatted-value k-input" tabindex="0" aria-disabled="false" aria-readonly="false" style="display: inline-block;"><input data-val="true" data-val-number="The field TaxValue must be a number." id="TaxValue" name="TaxValue" type="text" value="0" data-role="numerictextbox" role="spinbutton" class="k-input" aria-valuenow="0" aria-disabled="false" aria-readonly="false" style="display: none;"><span class="k-select"><span unselectable="on" class="k-link"><span unselectable="on" class="k-icon k-i-arrow-n" title="Increase value">Increase value</span></span><span unselectable="on" class="k-link"><span unselectable="on" class="k-icon k-i-arrow-s" title="Decrease value">Decrease value</span></span></span></span></span>
+                                                <script>
+                                                    jQuery(function () { jQuery("#TaxValue").kendoNumericTextBox({ "change": TaxChange }); });
+                                                </script>*@
+                                            @(Html.Kendo().NumericTextBox().Events(e => e.Change("TaxChange")).Name("TaxValue").HtmlAttributes(new { style = "width:100%" }).Value(@ViewBag.Bill.Tax))
+                                        </div>
+                                        <div class="col-md-5">
+                                            <span class="input-group-addon"><span id="totalTax"></span> VNĐ</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Tổng tiền:</label>
+                                        <div class="col-md-8">
+                                            <span class="input-group-addon"><span id="finalAmount"></span> VNĐ</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                    </div>
+                </div>
+                <div>
+                    <button type="submit">Cập nhật</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
